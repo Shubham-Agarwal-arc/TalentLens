@@ -1,0 +1,20 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+
+# Runtime data
+backend/resume_matcher.db
+backend/*smoke*.json
+backend/session-id.txt
+
+# JavaScript
+node_modules/
+frontend/dist/
+
+# Local tooling
+.idea/
+.vscode/
+*.log

@@ -1,0 +1,10 @@
+Senior Full-Stack & Backend Software Engineer
+We are seeking a Backend / Full-Stack Software Engineer with 4+ years of experience building scalable microservices and cloud-native web applications.
+
+Key Requirements:
+- 4+ years of hands-on software engineering experience in Python or Java.
+- Strong proficiency in FastAPI, Spring Boot, REST APIs, and Microservices architecture.
+- Experience with PostgreSQL, SQL, and Redis for high-throughput data storage.
+- Frontend familiarity with React.js and TypeScript.
+- Hands-on deployment experience using Docker, Kubernetes, AWS, and CI/CD pipelines.
+- Bachelor's degree (B.Tech / B.E. / B.S.) in Computer Science or related field.
