@@ -207,9 +207,16 @@ The launcher:
 2. Starts FastAPI on `http://127.0.0.1:8000`.
 3. Starts Vite on `http://127.0.0.1:5173`.
 4. Polls both services until they respond.
-5. Opens `http://localhost:5173` in the default browser.
-6. Keeps the services running until `Ctrl+C` is pressed in the launcher window.
-7. Stops the child processes during cleanup.
+5. Verifies that the frontend stylesheet is available before opening the browser.
+6. Runs the coordinator and both services without opening extra command windows.
+7. Opens a fresh `http://localhost:5173` launch URL in the default browser.
+8. Reuses already-running services if the launcher is clicked again.
+
+To stop the hidden services, double-click:
+
+```text
+Stop-TalentLens.bat
+```
 
 This is the preferred method for a technical interview demonstration because it avoids separate terminals and avoids the Windows PATH issue where `uvicorn.exe` may not be discoverable.
 

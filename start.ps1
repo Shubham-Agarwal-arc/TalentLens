@@ -14,16 +14,21 @@ $frontendProcess = $null
 
 try {
     Write-Host "Starting TalentLens..." -ForegroundColor Cyan
-    $backendProcess = Start-Process -FilePath $python `
-        -ArgumentList "-m uvicorn main:app --host 127.0.0.1 --port 8000" `
-        -WorkingDirectory $backend -PassThru
-
-    $frontendProcess = Start-Process -FilePath "cmd.exe" `
-        -ArgumentList "/c npm run dev -- --host 127.0.0.1" `
-        -WorkingDirectory $frontend -PassThru
-
     $backendReady = $false
-    for ($attempt = 0; $attempt -lt 60; $attempt++) {
+    try {
+        $health = Invoke-RestMethod -Uri "http://127.0.0.1:8000/api/health" -TimeoutSec 2
+        if ($health.status -eq "ok") {
+            $backendReady = $true
+        }
+    } catch {}
+
+    if (-not $backendReady) {
+        $backendProcess = Start-Process -FilePath $python `
+            -ArgumentList "-m uvicorn main:app --host 127.0.0.1 --port 8000" `
+            -WorkingDirectory $backend -WindowStyle Hidden -PassThru
+    }
+
+    for ($attempt = 0; $attempt -lt 60 -and -not $backendReady; $attempt++) {
         try {
             $health = Invoke-RestMethod -Uri "http://127.0.0.1:8000/api/health" -TimeoutSec 2
             if ($health.status -eq "ok") {
@@ -40,13 +45,26 @@ try {
     }
 
     $frontendReady = $false
-    for ($attempt = 0; $attempt -lt 60; $attempt++) {
-        try {
-            $request = [System.Net.WebRequest]::Create("http://127.0.0.1:5173")
-            $response = $request.GetResponse()
-            $response.Close()
+    try {
+        $styles = Invoke-WebRequest -Uri "http://127.0.0.1:5173/src/styles.css" -UseBasicParsing -TimeoutSec 2
+        if ($styles.StatusCode -eq 200 -and $styles.Content.Length -gt 1000) {
             $frontendReady = $true
-            break
+        }
+    } catch {}
+
+    if (-not $frontendReady) {
+        $frontendProcess = Start-Process -FilePath "npm.cmd" `
+            -ArgumentList "run dev -- --host 127.0.0.1" `
+            -WorkingDirectory $frontend -WindowStyle Hidden -PassThru
+    }
+
+    for ($attempt = 0; $attempt -lt 60 -and -not $frontendReady; $attempt++) {
+        try {
+            $styles = Invoke-WebRequest -Uri "http://127.0.0.1:5173/src/styles.css" -UseBasicParsing -TimeoutSec 2
+            if ($styles.StatusCode -eq 200 -and $styles.Content.Length -gt 1000) {
+                $frontendReady = $true
+                break
+            }
         } catch {
             Start-Sleep -Milliseconds 500
         }
@@ -58,9 +76,10 @@ try {
 
     Write-Host "Backend ready:  http://127.0.0.1:8000" -ForegroundColor Green
     Write-Host "Frontend ready: http://127.0.0.1:5173" -ForegroundColor Green
-    Start-Process "http://localhost:5173"
-    Write-Host "The app is open in your browser. Press Ctrl+C here to stop both services." -ForegroundColor Yellow
-    Wait-Process -Id $backendProcess.Id
+    Start-Process ("http://localhost:5173/?launch=" + [DateTimeOffset]::Now.ToUnixTimeMilliseconds())
+    if ($backendProcess) {
+        Wait-Process -Id $backendProcess.Id
+    }
 } finally {
     if ($backendProcess -and -not $backendProcess.HasExited) {
         Stop-Process -Id $backendProcess.Id -Force -ErrorAction SilentlyContinue

@@ -1,4 +1,3 @@
 @echo off
-title TalentLens
-powershell.exe -NoProfile -ExecutionPolicy Bypass -File "%~dp0start.ps1"
-if errorlevel 1 pause
+start "" powershell.exe -NoProfile -ExecutionPolicy Bypass -WindowStyle Hidden -File "%~dp0start.ps1"
+exit /b 0
