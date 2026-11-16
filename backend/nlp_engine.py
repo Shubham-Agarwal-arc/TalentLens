@@ -154,15 +154,38 @@ def extract_experience_years(text: str, is_jd: bool = False) -> float:
     if is_jd:
         return max(explicit_vals) if explicit_vals else 0.0
 
-    # Also compute date-range experience (e.g., 2020 - 2024 or 2021 - Present)
+    # Also compute date-range experience, including month ranges such as
+    # "Jan 2026 - Apr 2026" and year-only ranges such as "2020 - Present".
     current_year = datetime.now().year
-    ranges = re.findall(r"(20\d{2})\s*[-–to]+\s*(20\d{2}|present|current|now)", text_lower)
+    month_names = (
+        r"jan(?:uary)?|feb(?:ruary)?|mar(?:ch)?|apr(?:il)?|may|"
+        r"jun(?:e)?|jul(?:y)?|aug(?:ust)?|sep(?:tember)?|oct(?:ober)?|"
+        r"nov(?:ember)?|dec(?:ember)?"
+    )
+    month_numbers = {
+        "jan": 1, "january": 1, "feb": 2, "february": 2,
+        "mar": 3, "march": 3, "apr": 4, "april": 4, "may": 5,
+        "jun": 6, "june": 6, "jul": 7, "july": 7, "aug": 8,
+        "august": 8, "sep": 9, "september": 9, "oct": 10,
+        "october": 10, "nov": 11, "november": 11, "dec": 12,
+        "december": 12,
+    }
+    date_ranges = re.findall(
+        rf"(?:(?P<start_month>{month_names})\s+)?(?P<start_year>20\d{{2}})"
+        rf"\s*[-–—to]+\s*"
+        rf"(?:(?P<end_month>{month_names})\s+)?"
+        rf"(?P<end_year>20\d{{2}}|present|current|now)",
+        text_lower,
+    )
     range_years = 0.0
-    for start_str, end_str in ranges:
+    for start_month, start_str, end_month, end_str in date_ranges:
         start_y = int(start_str)
         end_y = current_year if end_str in {"present", "current", "now"} else int(end_str)
         if 2000 <= start_y <= end_y <= current_year:
-            range_years += max(0.5, float(end_y - start_y))
+            start_m = month_numbers.get(start_month, 1)
+            end_m = month_numbers.get(end_month, datetime.now().month if end_str in {"present", "current", "now"} else 12)
+            months = ((end_y - start_y) * 12) + (end_m - start_m)
+            range_years += max(0.25, round(months / 12, 2))
 
     candidates = explicit_vals + ([round(range_years, 1)] if range_years > 0 else [])
     return max(candidates) if candidates else 0.0
@@ -187,22 +210,41 @@ def extract_education(text: str) -> str:
 
 def extract_candidate_metadata(text: str, filename: str) -> Dict[str, str]:
     lines = [line.strip() for line in text.splitlines() if line.strip()]
-    skip_headers = {"resume", "curriculum vitae", "cv", "profile", "bio"}
+    skip_headers = {
+        "resume",
+        "curriculum vitae",
+        "cv",
+        "profile",
+        "bio",
+        "professional summary",
+        "technical skills",
+        "experience",
+    }
     candidate_name = filename.rsplit(".", 1)[0].replace("_", " ").title()
 
-    for line in lines[:5]:
+    for line in lines[:6]:
+        if "@" in line or any(char.isdigit() for char in line):
+            continue
+        # Prefer an all-caps two/three-word name, even when a PDF disclaimer
+        # is concatenated directly before it.
+        candidates = re.findall(r"\b[A-Z][A-Z'-]+(?:\s+[A-Z][A-Z'-]+){1,2}\b", line)
+        for candidate in candidates:
+            if candidate.lower() not in skip_headers and not candidate.startswith("FICTIONAL SAMPLE"):
+                candidate_name = candidate.title()
+                break
+        if candidate_name != filename.rsplit(".", 1)[0].replace("_", " ").title():
+            break
+
         clean_line = re.sub(r"[^a-zA-Z\s\.\-]", "", line).strip()
-        if (
-            2 <= len(clean_line.split()) <= 4
-            and clean_line.lower() not in skip_headers
-            and "@" not in line
-            and not any(char.isdigit() for char in clean_line)
-        ):
+        if 2 <= len(clean_line.split()) <= 4 and clean_line.lower() not in skip_headers:
             candidate_name = clean_line.title()
             break
 
     email_match = re.search(r"[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}", text)
-    phone_match = re.search(r"(\+?\d{1,3}[-.\s]?)?\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}", text)
+    phone_match = re.search(
+        r"(?:\+\d{1,3}[-.\s]?)?(?:\d{3}[-.\s]?\d{3}[-.\s]?\d{4}|\d{5}[-.\s]?\d{5})",
+        text,
+    )
 
     return {
         "candidate_name": candidate_name,
