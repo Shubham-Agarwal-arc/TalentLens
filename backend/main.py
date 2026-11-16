@@ -25,7 +25,7 @@ SUPPORTED_JD_EXTENSIONS = {".pdf", ".docx", ".txt"}
 SUPPORTED_RESUME_EXTENSIONS = {".pdf", ".docx"}
 
 app = FastAPI(
-    title="AI Resume Matcher API",
+    title="TalentLens API",
     version="1.0.0",
     description="Explainable resume-to-job-description matching API.",
 )

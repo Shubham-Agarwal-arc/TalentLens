@@ -1,4 +1,4 @@
-# AI Resume Matcher
+# TalentLens
 
 An explainable prototype for comparing a job description with a batch of synthetic PDF/DOCX resumes. It extracts structured candidate information, ranks candidates from 0 to 100, and shows the evidence behind every score.
 
@@ -107,8 +107,8 @@ git init
 git add .
 git commit -m "Build explainable AI resume matcher"
 git branch -M main
-git remote add origin https://github.com/<your-github-username>/ai-resume-matcher.git
+git remote add origin https://github.com/<your-github-username>/TalentLens.git
 git push -u origin main
 ```
 
-Create the empty GitHub repository first at `https://github.com/new`, using the name `ai-resume-matcher`. Do not initialize it with another README or `.gitignore`, because this project already contains both.
+Create the empty GitHub repository first at `https://github.com/new`, using the name `TalentLens`. GitHub repository names are commonly displayed in lowercase in URLs, so the final URL may appear as `https://github.com/<your-github-username>/talentlens`. Do not initialize it with another README or `.gitignore`, because this project already contains both.

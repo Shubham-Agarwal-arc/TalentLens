@@ -13,7 +13,7 @@ $backendProcess = $null
 $frontendProcess = $null
 
 try {
-    Write-Host "Starting AI Resume Matcher..." -ForegroundColor Cyan
+    Write-Host "Starting TalentLens..." -ForegroundColor Cyan
     $backendProcess = Start-Process -FilePath $python `
         -ArgumentList "-m uvicorn main:app --host 127.0.0.1 --port 8000" `
         -WorkingDirectory $backend -PassThru

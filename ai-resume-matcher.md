@@ -1,4 +1,4 @@
-# AI-Based Resume Matching & Candidate Ranking System
+# TalentLens — AI-Based Resume Matching & Candidate Ranking System
 
 An end-to-end NLP-powered Applicant Tracking & Candidate Ranking prototype that parses Job Descriptions and batch-uploaded resumes (PDF/DOCX), evaluates semantic and structured fit, and produces explainable candidate rankings.
 
