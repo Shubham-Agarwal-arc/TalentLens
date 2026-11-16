@@ -14,7 +14,7 @@ An explainable prototype for comparing a job description with a batch of synthet
 
 ## Architecture
 
-- **Frontend:** React 18 and Vite. The UI is a single recruiter workflow with upload panels, filters, a ranking table, and a candidate inspector.
+- **Frontend:** React 18, Vite, and locally bundled Tailwind CSS. The UI is a recruiter workflow with upload panels, filters, a ranking table, summary metrics, and a candidate inspector.
 - **Backend:** FastAPI with `pypdf` and `python-docx` document extraction.
 - **NLP:** `sentence-transformers/all-MiniLM-L6-v2` embeddings plus a curated skill alias taxonomy.
 - **Storage:** SQLite, created at `backend/resume_matcher.db` at runtime.
